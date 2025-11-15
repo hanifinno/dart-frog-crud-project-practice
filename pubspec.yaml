@@ -1,0 +1,16 @@
+name: crud_project
+description: This is a CRUD project using Dart Frog for server-side development and practice with RESTful APIs.
+version: 1.0.0+1
+publish_to: none
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  dart_frog: ^1.2.6
+  uuid: ^4.5.2
+
+dev_dependencies:
+  dart_frog_lint: ^0.1.2
+  mocktail: ^1.0.4
+  test: ^1.27.0
