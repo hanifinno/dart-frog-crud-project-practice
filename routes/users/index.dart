@@ -9,7 +9,7 @@ Future<Response> onRequest(RequestContext context) async {
   final userRepository = context.read<UserRepository>();
   switch (context.request.method) {
     case HttpMethod.get:
-      final users = userRepository.getAllUsers();
+      final users = await userRepository.getAllUsers();
       final usersJson = users.map((user) => user.toJson()).toList();
       return Response.json(body: usersJson);
     case HttpMethod.post:
@@ -24,7 +24,7 @@ Future<Response> onRequest(RequestContext context) async {
         );
       }
 
-      final newUser = userRepository.createUser(name, email);
+      final newUser = await userRepository.createUser(name, email);
       return Response.json(
         statusCode: HttpStatus.created,
         body: newUser.toJson(),

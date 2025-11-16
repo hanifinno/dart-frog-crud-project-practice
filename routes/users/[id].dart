@@ -5,7 +5,7 @@ import 'package:dart_frog/dart_frog.dart';
 
 Future<Response> onRequest(RequestContext context, String id) async {
   final userRepository = context.read<UserRepository>();
-  final user = userRepository.getUserById(id);
+  final user = await userRepository.getUserById(id);
   if (user == null) {
     return Response(statusCode: 404, body: 'User not found.');
   }
@@ -25,10 +25,10 @@ Future<Response> onRequest(RequestContext context, String id) async {
         );
       }
 
-      final updatedUser = userRepository.update(id, name, email);
+      final updatedUser = await userRepository.update(id, name, email);
       return Response.json(body: updatedUser?.toJson());
     case HttpMethod.delete:
-      userRepository.deleteUser(id);
+      await userRepository.deleteUser(id);
       return Response(statusCode: HttpStatus.noContent);
     case HttpMethod.head:
     case HttpMethod.options:

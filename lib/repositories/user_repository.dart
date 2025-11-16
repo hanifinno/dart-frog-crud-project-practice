@@ -1,45 +1,55 @@
 import 'package:crud_project/models/user.dart';
+import 'package:crud_project/services/mongo_service.dart';
 import 'package:uuid/uuid.dart';
 
 /// A repository that handles user data.
 class UserRepository {
-  final Map<String, User> _users = <String, User>{};
-  final _uuid = const Uuid();
+  /// Creates a new instance of the [UserRepository].
+  UserRepository(this._mongoService);
+
+  final MongoService _mongoService;
 
   /// Creates a new user with the given [name] and [email].
-  User createUser(String name, String email) {
-    final user = User(id: _uuid.v4(), name: name, email: email);
-    _users[user.id] = user;
+  Future<User> createUser(String name, String email) async {
+    final User user = User(id: const Uuid().v4(), name: name, email: email);
+    await _mongoService.usersCollection.insertOne(user.toJson());
     return user;
   }
 
-  /// Returns a list of all users.
-  List<User> getAllUsers() {
-    return _users.values.toList();
+  /// Retrieves all users.
+  Future<List<User>> getAllUsers() async {
+    final users = <User>[];
+    final results = _mongoService.usersCollection.find();
+    await for (final result in results) {
+      users.add(User.fromJson(result));
+    }
+    return users;
   }
 
-  /// Returns a user with the given [id].
-  ///
-  /// Returns `null` if no user with the given [id] is found.
-  User? getUserById(String id) {
-    return _users[id];
+  /// Retrieves a user by their [id].
+  Future<User?> getUserById(String id) async {
+    final result = await _mongoService.usersCollection.findOne({'id': id});
+    if (result == null) {
+      return null;
+    }
+    return User.fromJson(result);
   }
 
   /// Updates the user with the given [id] to have the new [name] and [email].
-  ///
-  /// Returns the updated user.
-  /// Returns `null` if no user with the given [id] is found.
-  User? update(String id, String name, String email) {
-    if (!_users.containsKey(id)) {
-      return null;
-    }
+  Future<User?> update(String id, String name, String email) async {
     final updatedUser = User(id: id, name: name, email: email);
-    _users[id] = updatedUser;
-    return updatedUser;
+    final result = await _mongoService.usersCollection.replaceOne(
+      {'id': id},
+      updatedUser.toJson(),
+    );
+    if (result.isSuccess && result.nModified == 1) {
+      return updatedUser;
+    }
+    return null;
   }
 
   /// Deletes the user with the given [id].
-  void deleteUser(String id) {
-    _users.remove(id);
+  Future<void> deleteUser(String id) async {
+    await _mongoService.usersCollection.deleteOne({'id': id});
   }
 }
